@@ -15,6 +15,9 @@ Found 1644 fields in ECS definition
 Generating custom data from ECS definition
 Generated 1574 fields in custom data
 Connecting to: https://localhost:9200
+Creating index: testindex5
+Adding document to index: testindex5
+Retrieves mapping from index: testindex5
 Comparing ECS definition with Elasticsearch mapping
 The key-value pair (container.cpu.usage: float) does not exist. Field type should be: scaled_float
 The key-value pair (container.memory.usage: float) does not exist. Field type should be: scaled_float
