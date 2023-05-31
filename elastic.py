@@ -13,7 +13,7 @@ settings = {
 
 def client(host, user, password):
     es = Elasticsearch(hosts=host, http_auth=(
-        user, password), verify_certs=False)
+        user, password), verify_certs=False, ssl_show_warn=False)
     return es
 
 
