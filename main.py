@@ -4,6 +4,10 @@ import elastic
 from mappings import process_mappings
 import os
 
+# Disable SSL warnings
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 # Dynamic mapping Settings
 dm_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/887e5f3d06fb5fa7bd5b56c11378cc50e4cc6d6e/x-pack/plugin/core/src/main/resources/ecs-dynamic-mappings.json'
@@ -50,6 +54,9 @@ if __name__ == "__main__":
     mapping_compare = process_mappings(elastic_mappings, es_index)
 
     print("Comparing ECS definition with Elasticsearch mapping")
+    print(f"Deleting temp files: {files}")
+    cleanup_files(files)
+
     for key, value in mapping_compare.items():
         if key in ecs_flat and ecs_flat[key] == value:
             matched_fields += 1

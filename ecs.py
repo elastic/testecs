@@ -32,7 +32,7 @@ def generate_custom_value(data_type):
 
     if data_type == "date":
         return fake.iso8601(tzinfo=datetime.now().astimezone().tzinfo)
-    elif data_type in ["keyword", "wildcard", "text", "match_only_text", "constant_keyword"]:
+    elif data_type in ["keyword", "wildcard", "text", "match_only_text"]:
         return fake.word()
     elif data_type == "constant_keyword":
         return "test"
@@ -45,7 +45,7 @@ def generate_custom_value(data_type):
     elif data_type == "scaled_float":
         return fake.pyfloat(min_value=0.00, max_value=100.00)
     elif data_type == "float":
-        return fake.pyfloat()
+        return fake.pyfloat(min_value=1, max_value=100.00)
     elif data_type in ["object", "flattened", "nested"]:
         return None
     elif data_type in ["int", "long"]:

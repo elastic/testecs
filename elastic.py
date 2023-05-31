@@ -28,4 +28,7 @@ def index_document(es, index_name, document):
 
 
 def get_mappings(es, index_name):
-    return es.indices.get_mapping(index=index_name)
+    mappings = es.indices.get_mapping(index=index_name)
+    print(f"Done, deleting index: {index_name}")
+    es.options(ignore_status=[400, 404]).indices.delete(index=index_name)
+    return mappings
