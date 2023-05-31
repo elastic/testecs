@@ -66,5 +66,7 @@ if __name__ == "__main__":
             print(
                 f"The key-value pair ({key}: {value}) does not exist. Field type should be: {ecs_flat[key]}")
 
+    print(
+        f"Tested {len(mapping_compare)}/{matched_fields + missmatched_fields} Fields")
     print(f"Matched fields: {matched_fields}")
     print(f"Missmatched fields: {missmatched_fields}")
