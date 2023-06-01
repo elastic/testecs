@@ -10,7 +10,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 # Dynamic mapping Settings
-dm_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/887e5f3d06fb5fa7bd5b56c11378cc50e4cc6d6e/x-pack/plugin/core/src/main/resources/ecs-dynamic-mappings.json'
+dm_datastream_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/4211c3ae051c51df3e649ed687a4639aed66e794/x-pack/plugin/core/src/main/resources/ecs-data-stream-mappings.json'
+dm_ecs_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/4211c3ae051c51df3e649ed687a4639aed66e794/x-pack/plugin/core/src/main/resources/ecs-dynamic-mappings.json'
+dm_default_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/4211c3ae051c51df3e649ed687a4639aed66e794/x-pack/plugin/core/src/main/resources/string-to-keyword-dynamic-mapping.json'
 # ECS Settings
 ecs_url = 'https://raw.githubusercontent.com/elastic/ecs/main/generated/ecs/ecs_flat.yml'
 
@@ -36,7 +38,7 @@ if __name__ == "__main__":
     print(f"Deleting old files: {files}")
     cleanup_files(files)
 
-    dm = process_dynamic_mapping(dm_url)
+    dm = process_dynamic_mapping(dm_default_url, dm_datastream_url, dm_ecs_url)
     ecs_generated, ecs_flat = process_ecs(ecs_url)
 
     print(f"Connecting to: {es_host}")
@@ -55,7 +57,6 @@ if __name__ == "__main__":
 
     print("Comparing ECS definition with Elasticsearch mapping")
     print(f"Deleting temp files: {files}")
-    cleanup_files(files)
 
     for key, value in mapping_compare.items():
         if key in ecs_flat and ecs_flat[key] == value:
