@@ -40,8 +40,6 @@ def generate_custom_value(data_type):
         return "test"
     elif data_type == "ip":
         return fake.ipv4()
-    elif data_type == "geo_point":
-        return {"lat": 10.10, "lon": 10.10}
     elif data_type == "boolean":
         return False
     elif data_type == "scaled_float":
@@ -72,10 +70,16 @@ def generate_custom_json(ecs_input):
             current = current[field]
 
         field_name = field_path_parts[-1]
-        test_value = generate_custom_value(data_type)
-        if test_value is not None:
+        if data_type == "geo_point":
             generated_fields += 1
-            current[field_name] = test_value
-            custom_flat_data[field_path] = test_value
+            current[field_name] = {"lat": 10.10, "lon": 10.10}
+            custom_flat_data[field_path] = [20.20, 20.20]
+        else:
+            test_value = generate_custom_value(data_type)
+            if test_value is not None:
+                generated_fields += 1
+                current[field_name] = test_value
+                custom_flat_data[field_path] = test_value
+
     print(f"Generated {generated_fields} fields in custom data")
     return custom_data, custom_flat_data

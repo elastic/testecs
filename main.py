@@ -10,7 +10,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 # Dynamic ECS mappings
-dm_ecs_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/13fb93511c23fe0d1a02de07644a0415253010c5/x-pack/plugin/core/src/main/resources/ecs-dynamic-mappings.json'
+dm_ecs_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/275afa7708ccb7ac206ad935ce63cc26c7c9aa67/x-pack/plugin/core/src/main/resources/ecs-dynamic-mappings.json'
 
 # ECS Settings
 ecs_url = 'https://raw.githubusercontent.com/elastic/ecs/main/generated/ecs/ecs_flat.yml'
@@ -32,13 +32,13 @@ def cleanup_files(files):
             os.remove(file)
 
 
-def match_mappings(custom_data, test_index_name):
+def match_mappings(custom_data, test_index_name, subobjects):
     matched_fields = 0
     ignored_fields = 0
     mismatched_fields = 0
 
     print(f"Creating index: {test_index_name}")
-    elastic.create_index(es_client, test_index_name, dm)
+    elastic.create_index(es_client, test_index_name, dm, subobjects)
 
     print(f"Adding document to index: {test_index_name}")
     elastic.index_document(es_client, test_index_name, custom_data)
@@ -49,7 +49,6 @@ def match_mappings(custom_data, test_index_name):
     mapping_compare = process_mappings(elastic_mappings, test_index_name)
 
     print("Comparing ECS definition with Elasticsearch mapping")
-    print(f"Deleting temp files: {files}")
     for key, value in mapping_compare.items():
         if key in ecs_flat:
             if ecs_flat[key] == value:
@@ -82,7 +81,13 @@ if __name__ == "__main__":
     print(f"Connecting to: {es_host}")
     es_client = elastic.client(es_host, es_user, es_pass)
 
-    match_mappings(ecs_generated, "testindex_nesting")
-    match_mappings(ecs_flat_generated, "testindex_flat")
+    print(f"Testing document with nested objects")
+    match_mappings(ecs_flat_generated, "testindex_flat", True)
+
+    print(f"Testing flattened document")
+    match_mappings(ecs_generated, "testindex_nesting", True)
+
+    print(f"Testing flattened document with 'subobjects: false'")
+    match_mappings(ecs_flat_generated, "testindex_flat_subobjects_false", False)
 
     cleanup_files(files)

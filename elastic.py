@@ -17,8 +17,9 @@ def client(host, user, password):
     return es
 
 
-def create_index(es, index_name, template):
+def create_index(es, index_name, template, subobjects):
     es.options(ignore_status=[400, 404]).indices.delete(index=index_name)
+    settings['mappings']['subobjects'] = subobjects
     settings['mappings']['dynamic_templates'] = template
     es.indices.create(index=index_name, body=settings)
 
