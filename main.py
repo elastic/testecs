@@ -16,18 +16,14 @@ dm_ecs_url = 'https://raw.githubusercontent.com/elastic/elasticsearch/13fb93511c
 ecs_url = 'https://raw.githubusercontent.com/elastic/ecs/main/generated/ecs/ecs_flat.yml'
 
 files = ['field_mappings.json', 'dynamic_template.json',
-         'ecs_generated.json', 'ecs_flat.json', 'results.json']
+         'ecs_generated.json', 'ecs_flat_generated.json',
+         'ecs_flat.json', 'results.json']
 # Elasticsearch Settings
 es_host = "http://localhost:9200"
-es_index = "testindex5"
 es_user = "elastic"
 es_pass = "password"
 
 ignore_fields = ["data_stream.dataset", "data_stream.namespace", "data_stream.type"]
-
-matched_fields = 0
-ignored_fields = 0
-missmatched_fields = 0
 
 
 def cleanup_files(files):
@@ -36,30 +32,24 @@ def cleanup_files(files):
             os.remove(file)
 
 
-if __name__ == "__main__":
-    print(f"Deleting old files: {files}")
-    cleanup_files(files)
+def match_mappings(custom_data, test_index_name):
+    matched_fields = 0
+    ignored_fields = 0
+    mismatched_fields = 0
 
-    dm = process_dynamic_mapping(dm_ecs_url)
-    ecs_generated, ecs_flat = process_ecs(ecs_url)
+    print(f"Creating index: {test_index_name}")
+    elastic.create_index(es_client, test_index_name, dm)
 
-    print(f"Connecting to: {es_host}")
-    es = elastic.client(es_host, es_user, es_pass)
+    print(f"Adding document to index: {test_index_name}")
+    elastic.index_document(es_client, test_index_name, custom_data)
 
-    print(f"Creating index: {es_index}")
-    elastic.create_index(es, es_index, dm)
+    print(f"Retrieves mapping from index: {test_index_name}")
+    elastic_mappings = elastic.get_mappings(es_client, test_index_name)
 
-    print(f"Adding document to index: {es_index}")
-    elastic.index_document(es, es_index, ecs_generated)
-
-    print(f"Retrieves mapping from index: {es_index}")
-    elastic_mappings = elastic.get_mappings(es, es_index)
-
-    mapping_compare = process_mappings(elastic_mappings, es_index)
+    mapping_compare = process_mappings(elastic_mappings, test_index_name)
 
     print("Comparing ECS definition with Elasticsearch mapping")
     print(f"Deleting temp files: {files}")
-
     for key, value in mapping_compare.items():
         if key in ecs_flat:
             if ecs_flat[key] == value:
@@ -69,17 +59,30 @@ if __name__ == "__main__":
                 ignored_fields += 1
                 continue
             else:
-                missmatched_fields += 1
+                mismatched_fields += 1
                 print(
                     f"Incorrect mapping for '{key}'- found '{value}' and should be: '{ecs_flat[key]}'")
         else:
             print(
                 f"The key-value pair ({key}: {value}) has no ECS mapping")
-
     print(
-        f"Tested {len(mapping_compare)}/{matched_fields + missmatched_fields} Fields")
+        f"Tested {len(mapping_compare)}/{matched_fields + mismatched_fields} Fields")
     print(f"Matched fields: {matched_fields}")
     print(f"Ignored fields: {ignored_fields}")
-    print(f"Missmatched fields: {missmatched_fields}")
+    print(f"Missmatched fields: {mismatched_fields}")
+
+
+if __name__ == "__main__":
+    print(f"Deleting old files: {files}")
+    cleanup_files(files)
+
+    dm = process_dynamic_mapping(dm_ecs_url)
+    ecs_generated, ecs_flat_generated, ecs_flat = process_ecs(ecs_url)
+
+    print(f"Connecting to: {es_host}")
+    es_client = elastic.client(es_host, es_user, es_pass)
+
+    match_mappings(ecs_generated, "testindex_nesting")
+    match_mappings(ecs_flat_generated, "testindex_flat")
 
     cleanup_files(files)

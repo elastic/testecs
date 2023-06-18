@@ -21,10 +21,12 @@ def process_ecs(url):
     with open('ecs_flat.json', 'w') as file:
         json.dump(ecsoutput, file, indent=2)
     print(f"Found {ecs_fields} fields in ECS definition")
-    custom_data = generate_custom_json(ecsoutput)
+    custom_data, custom_flat_data = generate_custom_json(ecsoutput)
     with open('ecs_generated.json', 'w') as file:
         json.dump(custom_data, file, indent=2)
-    return custom_data, ecsoutput
+    with open('ecs_flat_generated.json', 'w') as file:
+        json.dump(custom_flat_data, file, indent=2)
+    return custom_data, custom_flat_data, ecsoutput
 
 
 def generate_custom_value(data_type):
@@ -57,21 +59,23 @@ def generate_custom_value(data_type):
 
 def generate_custom_json(ecs_input):
     custom_data = {}
+    custom_flat_data = {}
     generated_fields = 0
     print("Generating custom data from ECS definition")
     for field_path, data_type in ecs_input.items():
-        field_path = field_path.split(".")
+        field_path_parts = field_path.split(".")
         current = custom_data
 
-        for field in field_path[:-1]:
+        for field in field_path_parts[:-1]:
             if field not in current:
                 current[field] = {}
             current = current[field]
 
-        field_name = field_path[-1]
-        test = generate_custom_value(data_type)
-        if test is not None:
+        field_name = field_path_parts[-1]
+        test_value = generate_custom_value(data_type)
+        if test_value is not None:
             generated_fields += 1
-            current[field_name] = test
+            current[field_name] = test_value
+            custom_flat_data[field_path] = test_value
     print(f"Generated {generated_fields} fields in custom data")
-    return custom_data
+    return custom_data, custom_flat_data
