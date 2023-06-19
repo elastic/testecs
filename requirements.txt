@@ -1,2 +1,5 @@
 PyYAML==6.0
 Requests==2.31.0
+Faker==18.10.1
+elasticsearch==8.8.0
+urllib3==2.0.3
